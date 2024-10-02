@@ -134,7 +134,7 @@ jobs:
       - name: build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: annb/frontend
+          ECR_REPOSITORY: frontend
           IMAGE_TAG: latest
           REACT_APP_MOVIE_API_URL: http://localhost:5000 
         run: |
