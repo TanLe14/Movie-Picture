@@ -1,0 +1,149 @@
+name : BE CI Workflow
+
+on:
+  workflow_dispatch: # Allow manual trigger
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "starter/backend/**"
+  
+env:
+  PYTHON_VERSION: 3.11
+
+jobs:
+  lint:
+    name: run lint BE
+    runs-on: ubuntu-latest
+    defaults: 
+      run:
+        working-directory: starter/backend/
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: cache pipenv environment
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.local/share/virtualenvs
+            .venv
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pipenv-
+
+      - name: setup python environment
+        uses: actions/setup-python@v4
+        with: 
+          python-version: ${{env.PYTHON_VERSION}}
+
+      - name : install dependencies
+        run: |
+          pip install pipenv
+          pipenv install
+          pip install flake8
+
+      - name: run lint
+        run: pipenv run lint
+
+      # - name : failed line
+      #   run : pipenv run lint-fail
+
+  test:
+    name: run test BE
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: starter/backend/
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: cache pipenv environment
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.local/share/virtualenvs
+            .venv
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pipenv-
+
+      - name: setup python environment
+        uses: actions/setup-python@v4
+        with: 
+          python-version: ${{env.PYTHON_VERSION}}
+      
+      - name : install dependencies
+        run: |
+          pip install pipenv
+          pipenv install
+          pip install flake8
+
+      - name: run tests
+        run: pipenv run test
+
+      # - name: run tests fail
+      #   run: FAIL_TEST=true pipenv run test
+
+  build:
+    name: build and run BE
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: starter/backend/
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+
+      - name: cache pipenv environment
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.local/share/virtualenvs
+            .venv
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pipenv-
+
+      - name: setup python environment
+        uses: actions/setup-python@v4
+        with: 
+          python-version: ${{env.PYTHON_VERSION}}
+
+      - name : install dependencies
+        run: |
+          pip install pipenv
+          pipenv install
+          pip install flake8
+
+      - name: setup aws
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: annb/backend
+        run: |
+          git_sha=$(git rev-parse --short HEAD)
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$git_sha .
+          # docker push $ECR_REGISTRY/$ECR_REPOSITORY:$git_sha
+          docker images
+      
+      # - name: cache Docker layers
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/.docker/cache
+      #     key: ${{ runner.os }}-docker-cache-${{ github.sha }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-docker-cache-
+        
