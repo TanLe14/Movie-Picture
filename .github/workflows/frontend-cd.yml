@@ -133,9 +133,9 @@ jobs:
       - name: build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: annb/frontend
+          ECR_REPOSITORY: frontend
           IMAGE_TAG:  ${{ github.sha }}
-          REACT_APP_MOVIE_API_URL: http://af9dd53d3d2dd4744b97e35102aecff4-270454635.us-east-1.elb.amazonaws.com
+          REACT_APP_MOVIE_API_URL: http://localhost:5000
         run: |
           cd frontend &&  docker build --build-arg=REACT_APP_MOVIE_API_URL --tag=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -175,7 +175,7 @@ jobs:
       - name: set docker image for kustomize
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: annb/frontend
+          REPOSITORY: frontend
           IMAGE_TAG:  ${{ github.sha }}
         working-directory: starter/frontend/k8s
         run: |
