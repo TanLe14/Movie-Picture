@@ -9,7 +9,7 @@ on:
       - "starter/frontend/**"
 
 env:
-  EKS_CLUSTER_NAME: my-cluster
+  EKS_CLUSTER_NAME: cluster
 
 jobs:
   lint:
