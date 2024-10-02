@@ -256,7 +256,7 @@ docker run --name mp-frontend -p 3000:3000 -d mp-frontend]
 ```
 
 ```
-Frontend Service URL: a73f0d6f7dd744d2bbf3ecb0e7883d24-573667846.us-east-1.elb.amazonaws.com
+Frontend Service URL: http://ace790c6f9f3145aab82cf51cc903767-868264699.us-east-1.elb.amazonaws.com
 ```
 ### Deploy Kubernetes manifests
 
