@@ -19,9 +19,11 @@ jobs:
       run:
         working-directory: starter/frontend/    
     steps:
+      # Step 1: Check out the code from the repository.
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: Set up the latest version of Node.js.
       - name: Set up Node.js 
         uses: actions/setup-node@v4
         with:
@@ -39,10 +41,10 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-      
+        # Step 3: Install project dependencies.
       - name: Install dependencies
         run: npm ci
-
+        # Step 4: Execute the linter to check for code quality issues.
       - name: Run the linter
         run:  npm run lint
 
@@ -55,7 +57,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js 
         uses: actions/setup-node@v4
         with:
@@ -76,7 +78,7 @@ jobs:
 
       - name: Install dependencies
         run: cd frontend && npm ci
-  
+      # Step: Execute tests to validate the frontend code.
       - name: Run tests
         run: cd frontend && npm test 
 
@@ -88,6 +90,7 @@ jobs:
         working-directory: starter/
     runs-on: ubuntu-latest
     steps:
+        # Step 1: Check out the code from the repository.
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -108,7 +111,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
-
+         # Step 2: Install dependencies for the frontend.
       - name: Install dependencies
         run: cd frontend && npm ci
       - name: cleanup
@@ -127,6 +130,7 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
+        # Step 3: Authenticate to Amazon Elastic Container Registry.
       - name: login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -153,6 +157,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v3
 
+        # Configure AWS credentials for deployment.
       - name: configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
@@ -165,6 +170,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       
+        # Update kubeconfig to connect to the EKS cluster.
       - name: get cluster certificate
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
@@ -182,10 +188,7 @@ jobs:
         working-directory: starter/frontend/k8s
         run: |
           kustomize edit set image frontend=$REGISTRY/$REPOSITORY:$IMAGE_TAG
-      
+        # Deploy the application using Kubernetes manifests.
       - name: apply the manifests to the cluster
         working-directory: starter/frontend/k8s
         run: kustomize build | kubectl apply --validate=false -f -
-
-
-
