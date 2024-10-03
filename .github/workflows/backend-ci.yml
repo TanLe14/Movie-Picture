@@ -1,4 +1,4 @@
-name: BE CI Workflow
+name: BackEnd CI Workflow
 
 # Triggers
 on:
