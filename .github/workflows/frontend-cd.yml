@@ -1,4 +1,4 @@
-name: FE CD Workflow
+name: FrontEnd CD Workflow
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   lint:
-    name: run lint FE
+    name: run lint FrontEnd
     runs-on: ubuntu-latest
     defaults: 
       run:
@@ -47,7 +47,7 @@ jobs:
         run:  npm run lint
 
   test:
-    name: run test FE
+    name: run test FrontEnd
     runs-on: ubuntu-latest
     defaults: 
       run:
@@ -81,7 +81,7 @@ jobs:
         run: cd frontend && npm test 
 
   build:
-    name: build and run FE
+    name: build and run FrontEnd
     needs: [lint, test]
     defaults: 
       run:
@@ -136,7 +136,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: frontend
           IMAGE_TAG:  ${{ github.sha }}
-          REACT_APP_MOVIE_API_URL: aa95dce44d3c84077a571e4048bbca92-1782230451.us-east-1.elb.amazonaws.com
+          REACT_APP_MOVIE_API_URL: ab762bf64bdf547a2909fd4166816021-1288555840.us-east-1.elb.amazonaws.com
         run: |
           cd frontend &&  docker build --build-arg=REACT_APP_MOVIE_API_URL --tag=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
