@@ -1,4 +1,4 @@
-name: Frontend CI Workflow
+name: FrontEnd CI Workflow
 
 # Triggers the workflow when manually dispatched or on pull request closure to the main branch, only affecting frontend changes.
 on:
