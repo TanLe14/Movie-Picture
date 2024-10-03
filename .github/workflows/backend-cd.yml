@@ -10,7 +10,7 @@ on:
 
 env:
   PYTHON_VERSION: 3.12
-  EKS_CLUSTER_NAME: cluster
+  EKS_CLUSTER_NAME: cluster # EKS cluster name for deployment
 
 jobs:
   lint:
@@ -18,11 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     defaults: 
       run:
-        working-directory: starter/backend/
+        working-directory: starter/backend/ # Set working directory to backend folder
     steps:
+      # Step 1: Checkout the latest code from the repository
       - name: checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Cache pipenv environment to speed up subsequent jobs
       - name: cache pipenv environment
         uses: actions/cache@v2
         with:
@@ -33,17 +35,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pipenv-
 
+      # Step 3: Set up Python environment
       - name: setup python environment
         uses: actions/setup-python@v4
         with: 
           python-version: ${{env.PYTHON_VERSION}}
 
+      # Step 4: Install pipenv for dependency management
       - name : install dependencies
         run: |
           pip install pipenv
           pipenv install
           pip install flake8
-
+      
+      # Step 5: Run linting with flake8
       - name: run lint
         run: pipenv run lint
 
@@ -54,9 +59,11 @@ jobs:
       run:
         working-directory: starter/backend/
     steps:
+      # Step 1: Checkout the latest code from the repository
       - name: checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Cache pipenv environment
       - name: cache pipenv environment
         uses: actions/cache@v2
         with:
@@ -67,17 +74,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pipenv-
 
+      # Step 3: Set up Python environment
       - name: setup python environment
         uses: actions/setup-python@v4
         with: 
           python-version: ${{env.PYTHON_VERSION}}
       
+      # Step 4: Install dependencies
       - name : install dependencies
         run: |
           pip install pipenv
           pipenv install
           pip install flake8
 
+      # Step 5: Run tests with pipenv
       - name: run tests
         run: pipenv run test
 
@@ -89,9 +99,11 @@ jobs:
       run:
         working-directory: starter/backend/
     steps:
+      # Step 1: Checkout the latest code from the repository
       - name: checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Cache pipenv environment
       - name: cache pipenv environment
         uses: actions/cache@v2
         with:
@@ -102,17 +114,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pipenv-
 
+      # Step 3: Set up Python environment
       - name: setup python environment
         uses: actions/setup-python@v4
         with: 
           python-version: ${{env.PYTHON_VERSION}}
 
+      # Step 4: Install dependencies
       - name : install dependencies
         run: |
           pip install pipenv
           pipenv install
           pip install flake8
 
+
+      # Step 5: Configure AWS credentials
       - name: setup aws
         uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
@@ -121,6 +137,7 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
+      # Step 6: Log in to Amazon Elastic Container Registry (ECR)
       - name: login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -143,9 +160,11 @@ jobs:
       run:
         working-directory: starter/backend/
     steps:
+      # Step 1: Checkout the latest code from the repository
       - name: checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Configure AWS credentials for deploying to EKS
       - name: configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
@@ -154,10 +173,12 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
+      # Step 3: Log in to Amazon ECR
       - name: login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       
+      # Step 4: Get the Kubernetes cluster certificate
       - name: get cluster certificate
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
@@ -167,6 +188,7 @@ jobs:
         run: |
           ./init.sh || true
 
+      # Step 5: Set Docker image in Kubernetes manifests
       - name: set docker image for kustomize
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -176,6 +198,7 @@ jobs:
           git_sha=$(git rev-parse --short HEAD)
           kustomize edit set image backend=$REGISTRY/$REPOSITORY:$git_sha
       
+      # Step 6: Deploy the updated manifests to the Kubernetes cluster
       - name: apply the manifests to the cluster
         working-directory: starter/backend/k8s
         run: kustomize build | kubectl apply --validate=false -f -
