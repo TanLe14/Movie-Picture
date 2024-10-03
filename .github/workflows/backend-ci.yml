@@ -131,5 +131,4 @@ jobs:
         run: |
           git_sha=$(git rev-parse --short HEAD)
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$git_sha .
-          # docker push $ECR_REGISTRY/$ECR_REPOSITORY:$git_sha
-          docker images        
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$git_sha
